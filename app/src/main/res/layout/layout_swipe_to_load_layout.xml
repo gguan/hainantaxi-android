@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<com.example.develop.base.view.PoiSwipeToLoadLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_to_load_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/base_white">
+
+    <com.playalot.Play.ui.custom.RefreshHeaderView
+        android:id="@+id/swipe_refresh_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/refresh_head_height"
+        android:gravity="center"
+        android:scaleType="centerInside" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/swipe_target"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.playalot.Play.ui.custom.LoadMoreFooterView
+        android:id="@+id/swipe_load_more_footer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/load_more_bottom_height"
+        android:gravity="center" />
+</com.example.develop.base.view.PoiSwipeToLoadLayout>
+
