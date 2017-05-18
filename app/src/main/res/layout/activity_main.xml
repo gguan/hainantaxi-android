@@ -3,51 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.develop.base.MainActivity">
+    android:layout_height="match_parent">
 
-    <com.example.develop.base.view.CustomTitle
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title_center_text="title"
-        app:title_left_image_src="@mipmap/ic_launcher"
-        app:title_left_text_color="#FF0000"
-        app:title_center_text_color="#00FF00"
-        app:title_right_text_color="#0000FF"
-        app:title_left_text_size="12sp"
-        app:title_center_text_size="14sp"
-        app:title_right_text_size="8sp"
-        app:title_right_text="right"
-        app:title_left_text="left"
-        app:layout_constraintHorizontal_bias="0.952"
-        app:layout_constraintVertical_bias="0.0" />
+    <com.amap.api.maps.MapView
 
-    <com.example.develop.base.view.CustomTitle
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.125"
-        app:title_center_text="title"
-        app:title_left_image_src="@mipmap/ic_launcher"
-        app:title_right_image_src="@mipmap/ic_launcher"
-        app:title_left_type="image"
-        app:title_right_type="image"
-        app:title_left_text="left"
-        app:title_left_text_color="#FF0000"
-        app:title_center_text_color="#668800"
-        app:title_right_text_color="#0000FF"
-        app:title_left_text_size="12sp"
-        app:title_center_text_size="14sp"
-        app:title_right_text_size="8sp"
-        app:title_right_text="right" />
+        android:id="@+id/map"
+        android:layout_width="500dp"
+        android:layout_height="500dp"></com.amap.api.maps.MapView>
 
 
 </android.support.constraint.ConstraintLayout>

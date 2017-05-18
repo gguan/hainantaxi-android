@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 
-<com.example.develop.base.view.PoiSwipeToLoadLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.hainantaxi.view.PoiSwipeToLoadLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/swipe_to_load_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,5 +24,5 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/load_more_bottom_height"
         android:gravity="center" />
-</com.example.develop.base.view.PoiSwipeToLoadLayout>
+</com.hainantaxi.view.PoiSwipeToLoadLayout>
 
