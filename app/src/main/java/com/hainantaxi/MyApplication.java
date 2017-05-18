@@ -13,6 +13,8 @@ import com.tencent.bugly.crashreport.CrashReport;
 import com.tencent.tinker.android.dex.Dex;
 
 
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+
 import java.util.concurrent.TimeUnit;
 
 import cn.smssdk.SMSSDK;

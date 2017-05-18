@@ -35,6 +35,29 @@ android {
             dirs "libs"
         }
     }
+
+    signingConfigs {
+        debug {
+            storeFile file("../hainantaxi.jks")
+            storePassword "playalot"
+            keyAlias "hainantaxi"
+            keyPassword "playalot"
+        }
+
+        try {
+            release {
+                storeFile file("../hainantaxi.jks")
+                storePassword "playalot"
+                keyAlias "hainantaxi"
+                keyPassword "playalot"
+            }
+        } catch (Exception ex) {
+            throw new InvalidUserDataException(ex.toString())
+        }
+
+
+    }
+
 }
 
 
@@ -67,6 +90,7 @@ dependencies {
     compile 'com.tencent.bugly:nativecrashreport:latest.release'
     //MQTT
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     //mob 短信
     compile name: 'SMSSDK-2.1.4', ext: 'aar'
     compile name: 'SMSSDKGUI-2.1.4', ext: 'aar'
