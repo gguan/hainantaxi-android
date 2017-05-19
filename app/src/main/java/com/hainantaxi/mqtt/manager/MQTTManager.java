@@ -1,7 +1,10 @@
 package com.hainantaxi.mqtt.manager;
 
-import android.content.Context;
 import android.util.Log;
+
+import com.hainantaxi.MyApplication;
+import com.hainantaxi.modle.entity.Connection;
+
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -12,9 +15,12 @@ import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import rx.Observable;
+import rx.subjects.PublishSubject;
 
 /**
  * Created by develop on 2017/5/18.
@@ -23,78 +29,118 @@ import java.util.UUID;
 public class MQTTManager {
 
     private static MQTTManager instance;
-    private MqttAndroidClient mClient;
-    private Context mContext;
 
-    public static MQTTManager getInstance(Context context) {
+    private static final int Qos = 1;
+    private MqttAndroidClient mClient;
+    private String mClientId = "001";
+
+    private ArrayList<String> subscribes = new ArrayList<>();
+    private HashMap<String, PublishSubject<MqttMessage>> subSinal = new HashMap<>();
+    private Connection connection = new Connection();
+
+    public static MQTTManager getInstance() {
         if (instance == null) {
-            instance = new MQTTManager(context);
+            instance = new MQTTManager();
         }
         return instance;
     }
 
-    private MQTTManager(Context context) {
-        mContext = context;
-        createClient();
+    private MQTTManager() {
+        subscribes.clear();
+        start();
     }
 
-    private void createClient() {
-        MqttConnectOptions option = createOption();
+    private void start() {
+        MqttConnectOptions options = connection.createOptions();
         if (mClient == null) {
-            MqttClientPersistence mqttClientPersistence = new MemoryPersistence();
-            String serverURI = "tcp://45.63.126.236:1883";
-            String clicntId = "Android-1"+ UUID.randomUUID().toString();
+            MqttClientPersistence mqttClientPersistence = connection.getMqttClientPersistence();
+            String serverURI = connection.getServerURI();
+            mClientId = connection.getClicntId();
 
 
-            mClient = new MqttAndroidClient(mContext, serverURI, clicntId, mqttClientPersistence);
+            mClient = new MqttAndroidClient(MyApplication.getContext(), serverURI, mClientId, mqttClientPersistence);
             mClient.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
-                    Log.w("location", "__connectionLost-->" + cause.getMessage() + "");
+                    start();
                 }
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    //TODO 消息成功到达
-                    Log.w("location", "messageArrived-->" + message.getPayload().toString() + "");
+                    subSinal.get(topic).onNext(message);
                 }
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-                    try {
-                        Log.w("location", "deliveryComplete-->" + token.getMessage());
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
                 }
             });
         }
 
-        if (!mClient.isConnected()) {
-            try {
-                mClient.connect(option, "Connect", new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        //TODO 链接成功操作
-                            Log.w("location", "connect_onSuccess-->" + asyncActionToken.toString() + "");
-                    }
+        if (mClient != null && !mClient.isConnected()) {
+            connection(options);
+        }
+    }
 
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                            Log.w("location", "onFailure-->" + exception.getMessage());
-                    }
-                });
-            } catch (MqttException e) {
-                e.printStackTrace();
+    public void reset(String mClientId) {
+        stop();
+        this.mClientId = mClientId;
+        subscribes.clear();
+        start();
+    }
+
+
+    public void stop() {
+        if (mClient != null) {
+            disconnectClient();
+            mClient = null;
+        }
+    }
+
+    private void resubscribe() {
+        for (String k : subSinal.keySet()) {
+            if (!subscribes.contains(k)) {
+                subscribe(k);
             }
         }
     }
 
+    private void connection(MqttConnectOptions option) {
+        if (mClient != null) {
+            if (!mClient.isConnected()) {
+                try {
+                    mClient.connect(option, "Connect", new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            //TODO 链接成功操作
+                            Log.w("location", "connect_onSuccess-->" + asyncActionToken.toString() + "");
+                            resubscribe();
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                            Log.w("location", "onFailure-->" + exception.getMessage());
+                            start();
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                    start();
+                }
+            }
+        } else {
+            start();
+        }
+    }
 
     public void disconnectClient() {
-        if (mClient != null && mClient.isConnected()) {
+        if (mClient == null) {
+            return;
+        }
+
+        if (mClient.isConnected()) {
             try {
                 mClient.disconnect();
+                mClient = null;
             } catch (MqttException e) {
                 e.printStackTrace();
             }
@@ -102,28 +148,54 @@ public class MQTTManager {
     }
 
 
-    public void subscribe(String topic, int qos) {
-        if (mClient != null && mClient.isConnected()) {
-            try {
-                mClient.subscribe(topic, qos, "Subscribe", new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        //TODO 订阅成功操作
+    public Observable<MqttMessage> subscribe(String topic) {
 
-                            Log.w("location", "subscribe-->" +  asyncActionToken.toString() + "");
+        if (mClient == null) {
+            start();
+        } else {
+            if (mClient.isConnected()) {
+                if (!subscribes.contains(topic)) {
+                    try {
+                        mClient.subscribe(topic, Qos, "Subscribe", new IMqttActionListener() {
+                            @Override
+                            public void onSuccess(IMqttToken asyncActionToken) {
+                                //TODO 订阅成功操作
+                                if (!topic.isEmpty() && !subscribes.contains(topic)) {
+                                    subscribes.add(topic);
+                                }
 
+                                Log.w("location", "subscribe-->" + asyncActionToken.toString() + "");
+                            }
+
+                            @Override
+                            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+
+                                Log.w("location", "subscribe_onFailure-->" + asyncActionToken.toString() + "");
+
+                            }
+                        });
+                    } catch (MqttException e) {
+                        e.printStackTrace();
                     }
-
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-
-                            Log.w("location", "subscribe_onFailure-->" + asyncActionToken.toString() + "");
-
-                    }
-                });
-            } catch (MqttException e) {
-                e.printStackTrace();
+                }
+            } else {
+                connection(connection.createOptions());
             }
+        }
+
+        PublishSubject<MqttMessage> old = subSinal.get(topic);
+        if (old != null) {
+            return old.asObservable();
+        }
+        PublishSubject<MqttMessage> subject = PublishSubject.create();
+        subSinal.put(topic, subject);
+
+        return subject.asObservable();
+    }
+
+    private void saveSubscribe(String topic) {
+        if (!topic.isEmpty() && !subscribes.contains(topic)) {
+            subscribes.add(topic);
         }
     }
 
@@ -134,7 +206,12 @@ public class MQTTManager {
                 mClient.unsubscribe(topic, "Unsubscribe", new IMqttActionListener() {
                     @Override
                     public void onSuccess(IMqttToken asyncActionToken) {
-                        //TODO 取消订阅成功操作
+
+                        if (!topic.isEmpty() && subSinal.get(topic) != null) {
+                            subSinal.get(topic).onCompleted();
+                            subSinal.remove(topic);
+                            subscribes.remove(topic);
+                        }
                     }
 
                     @Override
@@ -149,59 +226,33 @@ public class MQTTManager {
     }
 
     public void publish(String topic, MqttMessage mq) {
-        if (mClient != null && mClient.isConnected()) {
-            try {
-                mClient.publish(topic, mq, "Publish", new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        //TODO 成功发布消息
+        if (mClient == null) {
+            start();
+        } else {
+            if (mClient.isConnected()) {
+                try {
+                    mClient.publish(topic, mq, "Publish", new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            //TODO 成功发布消息
+                            Log.w("location", "publish_onSuccess-->" + asyncActionToken.toString() + "");
 
-                            Log.w("location", "publish_onSuccess-->" +  asyncActionToken.toString() + "");
+                        }
 
-                    }
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                            Log.w("location", "publish_onFailure-->" + asyncActionToken.toString() + "");
 
-                            Log.w("location", "publish_onFailure-->" +  asyncActionToken.toString()+ "");
-
-                    }
-                });
-            } catch (MqttException e) {
-                e.printStackTrace();
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                connection(connection.createOptions());
             }
         }
-    }
-
-
-    private MqttConnectOptions createOption() {
-        MqttConnectOptions options = new MqttConnectOptions();
-        int timeout = MqttConnectOptions.CONNECTION_TIMEOUT_DEFAULT;
-        int keepAlive = MqttConnectOptions.KEEP_ALIVE_INTERVAL_DEFAULT;
-        boolean cleanSession = false;
-        String username = "司机";
-        String password = "123456";
-        String lwtTopic = "";
-        String lwtPayload = "";
-        int lwtQos = 0;
-        boolean lwtRetained = false;
-
-
-        options.setCleanSession(cleanSession);
-        options.setConnectionTimeout(timeout);
-        options.setAutomaticReconnect(true);
-        options.setKeepAliveInterval(keepAlive);
-        if (!username.isEmpty()) {
-            options.setUserName(username);
-        }
-        if (!password.isEmpty()) {
-            options.setPassword(password.toCharArray());
-        }
-
-        if (!lwtTopic.isEmpty() && !lwtPayload.isEmpty()) {
-            options.setWill(lwtTopic, lwtPayload.getBytes(), lwtQos, lwtRetained);
-        }
-        return options;
     }
 
 
@@ -211,7 +262,6 @@ public class MQTTManager {
             instance = null;
         }
     }
-
 
 }
 

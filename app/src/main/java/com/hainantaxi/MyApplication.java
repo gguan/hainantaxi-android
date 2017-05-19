@@ -1,7 +1,11 @@
 package com.hainantaxi;
 
 import android.app.Application;
+import android.content.Context;
+import android.util.Log;
 
+import com.hainantaxi.mqtt.Variable;
+import com.hainantaxi.mqtt.manager.MQTTManager;
 import com.hainantaxi.net.ApplicationModule;
 import com.hainantaxi.net.BaseRepositoryComponent;
 import com.hainantaxi.net.BasePreferenceServiceModule;
@@ -14,12 +18,14 @@ import com.tencent.tinker.android.dex.Dex;
 
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.concurrent.TimeUnit;
 
 import cn.smssdk.SMSSDK;
 import dalvik.system.DexFile;
 import okhttp3.OkHttpClient;
+import rx.functions.Action1;
 
 
 /**
@@ -30,14 +36,19 @@ public class MyApplication extends Application {
 
 
     private BaseRepositoryComponent mBaseRepositoryComponent;
-
+    private static Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        this.context = getApplicationContext();
         initRepositoryComponent();
 //        initBugly();
         initSMS();
+    }
+
+    public static Context getContext() {
+        return context;
     }
 
     private void initSMS() {
@@ -63,7 +74,19 @@ public class MyApplication extends Application {
                     .build();
             FrescoUtils.initFresco(this, okHttpClient);
         }
+
+        MQTTManager.getInstance().subscribe("region/13-2234-5740/driver").subscribe(new Action1<MqttMessage>() {
+            @Override
+            public void call(MqttMessage mqttMessage) {
+                Log.e("MQTT", mqttMessage.toString());
+            }
+        });
     }
 
 
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        MQTTManager.release();
+    }
 }
