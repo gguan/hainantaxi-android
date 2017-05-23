@@ -3,7 +3,7 @@ package com.hainantaxi.net.service;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.hainantaxi.modle.entity.response.UserToken;
+import com.hainantaxi.modle.response.UserToken;
 
 /**
  * 本地SharePreference服务，储存这用户的token，expires，user_id信息

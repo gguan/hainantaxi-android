@@ -12,9 +12,9 @@
         <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="android:colorPrimary">@color/colorPrimary</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">@color/base_white</item>
+        <item name="android:statusBarColor">@color/hn_white</item>
         <item name="android:colorControlHighlight">@color/colorAccent</item>
-        <item name="android:windowBackground">@color/base_white</item>
+        <item name="android:windowBackground">@color/hn_white</item>
     </style>
 
     <style name="AppTheme.AppCompat.Overlay" parent="ThemeActivity">
@@ -23,7 +23,7 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/base_white</item>
+        <item name="android:statusBarColor">@color/hn_white</item>
         <item name="android:colorAccent">@color/colorAccent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:colorControlHighlight">@color/colorAccent</item>

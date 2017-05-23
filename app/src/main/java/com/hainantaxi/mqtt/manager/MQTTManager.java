@@ -3,7 +3,7 @@ package com.hainantaxi.mqtt.manager;
 import android.util.Log;
 
 import com.hainantaxi.MyApplication;
-import com.hainantaxi.modle.entity.Connection;
+import com.hainantaxi.mqtt.modle.Connection;
 
 
 import org.eclipse.paho.android.service.MqttAndroidClient;

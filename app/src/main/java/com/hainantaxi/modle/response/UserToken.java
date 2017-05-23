@@ -1,4 +1,4 @@
-package com.hainantaxi.modle.entity.response;
+package com.hainantaxi.modle.response;
 
 public class UserToken {
     private String user_id;

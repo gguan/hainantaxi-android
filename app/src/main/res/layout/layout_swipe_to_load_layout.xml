@@ -5,7 +5,7 @@
     android:id="@+id/swipe_to_load_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/base_white">
+    android:background="@color/hn_white">
 
     <com.playalot.Play.ui.custom.RefreshHeaderView
         android:id="@+id/swipe_refresh_header"

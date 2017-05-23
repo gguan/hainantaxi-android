@@ -1,4 +1,4 @@
-package com.hainantaxi.modle.entity;
+package com.hainantaxi.mqtt.modle;
 
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 
 public class Connection {
-    private String serverURI = "tcp://45.63.126.236:1883";
+    private String serverURI = "tcp://hn.tbxark.site:1883";
     private String clicntId = "Android-1" + UUID.randomUUID().toString();
     private MqttClientPersistence mqttClientPersistence = new MemoryPersistence();
     private int timeout = MqttConnectOptions.CONNECTION_TIMEOUT_DEFAULT;

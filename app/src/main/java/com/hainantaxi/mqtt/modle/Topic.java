@@ -6,8 +6,8 @@ package com.hainantaxi.mqtt.modle;
 public class Topic {
 
 
-    public static String createLocation() {
-        return "location";
+    public static String createDriverLocation() {
+        return "region/test/driver";
     }
 
     public static String createDriverLocation(String params) {

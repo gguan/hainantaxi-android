@@ -5,51 +5,33 @@
 
     <com.amap.api.maps.MapView
         android:id="@+id/map"
-        android:layout_width="500dp"
-        android:layout_height="500dp"></com.amap.api.maps.MapView>
-
-    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/map"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"></com.amap.api.maps.MapView>
 
-        <TextView
-            android:id="@+id/tv_location"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:layout_marginBottom="0dp"
-            android:contentDescription="location"
-            android:gravity="center"
-            android:text="链接"
-            android:textAlignment="center"
-            android:textStyle="bold"
-            android:typeface="normal" />
 
-        <EditText
-            android:id="@+id/tv_text"
-            android:layout_width="match_parent"
+    <RelativeLayout
+        android:id="@+id/rl_switch_to_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="150dp"
+        android:layout_marginLeft="14dp">
+
+        <ImageView
+            android:id="@+id/iv_switch_to_location"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:editable="true" />
+            android:scaleType="centerCrop"
+            android:src="@mipmap/map_switch_to_location" />
 
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/iv_switch_to_location"
+            android:layout_alignLeft="@id/iv_switch_to_location"
+            android:layout_alignRight="@id/iv_switch_to_location"
+            android:layout_alignTop="@id/iv_switch_to_location"
+            android:background="@drawable/selector_map_location_select" />
 
-        <TextView
-            android:id="@+id/tv_send"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="发送" />
-
-
-    </LinearLayout>
-
-
+    </RelativeLayout>
 </RelativeLayout>

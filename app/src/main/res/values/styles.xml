@@ -22,6 +22,6 @@
 
     <style name="AppTheme.AppCompat" parent="ThemeActivity">
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowBackground">@color/base_white</item>
+        <item name="android:windowBackground">@color/hn_white</item>
     </style>
 </resources>
