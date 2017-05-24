@@ -17,7 +17,7 @@ public class AppUtils {
     public  static String getVersion(Context context) {
         String v =  getVersionName(context);
         if (v != null) {
-            //PLLog.e("Version", v);
+            //HNLog.e("Version", v);
             return v;
         } else {
             return version;

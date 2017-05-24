@@ -1,13 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <com.hainantaxi.view.CustomTitle
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        app:title_center_image_src="@mipmap/title_label"
+        app:title_center_type="image"
+        app:title_left_image_src="@mipmap/icon_user"
+        app:title_left_type="image"
+        app:title_right_image_src="@mipmap/icon_message"
+        app:title_right_type="image" />
+
 
     <com.amap.api.maps.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></com.amap.api.maps.MapView>
+        android:layout_height="match_parent"
+        android:layout_below="@id/title" />
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_below="@id/title"
+        android:layout_margin="@dimen/hn_distance_borders"
+        android:background="@drawable/shap_white_bg"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/hn_image_width"
+                android:layout_height="@dimen/hn_image_height" />
+
+            <TextView
+                android:id="@+id/tv_from"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:text="苹果社区"
+                android:textColor="@color/hn_black"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/hn_image_width"
+                android:layout_height="@dimen/hn_image_height" />
+
+            <TextView
+                android:id="@+id/tv_to"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:text="苹果社区"
+                android:textColor="@color/hn_black"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/rl_switch_to_location"

@@ -6,7 +6,9 @@
 
 
     <color name="hn_white">#FFFFFF</color>
-    <color name="hn_transparent">#00000000</color>
+    <color name="hn_transparent">#0000</color>
     <color name="hn_light_gray">#dddddddd</color>
+    <color name="hn_light_gray2">#AAAAAA</color>
+    <color name="hn_black">#333333</color>
 
 </resources>

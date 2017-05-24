@@ -81,6 +81,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.citysearchpoi.CitySearchActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Transparent_AppTheme"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+
 
         <!--mob 短信页面配置-->
         <activity

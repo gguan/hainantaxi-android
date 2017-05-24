@@ -9,7 +9,11 @@ import java.util.List;
  */
 
 public class DeriverLocation {
-    //{"id":"bot-10-0-2298-Grandfather's Profile","timestamp":1495526048517,"position":[39.859009,116.446823]}
+
+    private final int COUNT = 2;//数组数量
+    private final int LAT = 1;//纬度位置
+    private final int LNG = 0;// 经度位置
+
     private String id;
     private long timestamp;
     private ArrayList<Double> position;
@@ -43,8 +47,8 @@ public class DeriverLocation {
     public Coordinate getCoordinate() {
         if (position != null && position.size() == 2) {
             Coordinate coordinate = new Coordinate();
-            coordinate.setLatidute(position.get(0));
-            coordinate.setLongtidute(position.get(1));
+            coordinate.setLatidute(position.get(LAT));
+            coordinate.setLongtidute(position.get(LNG));
             return coordinate;
         }
         return coordinate;
@@ -58,8 +62,8 @@ public class DeriverLocation {
                 position.add(coordinate.getLongtidute());
             } else {
                 if (position.size() == 2) {
-                    position.set(0, coordinate.getLatidute());
-                    position.set(1, coordinate.getLongtidute());
+                    position.set(LAT, coordinate.getLatidute());
+                    position.set(LNG, coordinate.getLongtidute());
                 }
             }
         }

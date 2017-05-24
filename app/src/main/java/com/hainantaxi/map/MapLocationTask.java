@@ -2,7 +2,7 @@ package com.hainantaxi.map;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.util.Log;
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.amap.api.location.AMapLocation;
@@ -25,26 +25,24 @@ import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.utils.SpatialRelationUtil;
 import com.amap.api.maps.utils.overlay.SmoothMoveMarker;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.hainantaxi.MyApplication;
 import com.hainantaxi.R;
+import com.hainantaxi.modle.entity.Coordinate;
 import com.hainantaxi.modle.entity.DeriverLocation;
+import com.hainantaxi.mqtt.Variable;
 import com.hainantaxi.mqtt.manager.MQTTManager;
 import com.hainantaxi.mqtt.modle.Topic;
+import com.hainantaxi.utils.HNLog;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import rx.functions.Action1;
 
 /**
  * Created by develop on 2017/5/23.
@@ -60,7 +58,16 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
 
     AMap mAmap;
     MapView mapView;
-    private SmoothMoveMarker markerOption;
+    private SmoothMoveMarker moveMarker;
+
+    LatLng fromLatLng;
+    LatLng toLatLng;
+    private Marker startMark;
+    private Marker endMark;
+
+
+    private Variable<Coordinate> coordinateVariable;
+
 
     public MapLocationTask(MapView mapView) {
         if (mapView == null) {
@@ -68,7 +75,9 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
         }
         this.mapView = mapView;
         this.mAmap = mapView.getMap();
-        markerOption = new SmoothMoveMarker(mAmap);
+        moveMarker = new SmoothMoveMarker(mAmap);
+
+        init();
     }
 
     public void init() {
@@ -96,37 +105,30 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
         mLocationClient.startLocation();
     }
 
-    //获取屏幕中间坐标
+    /**
+     * 获取屏幕中间坐标
+     *
+     * @param aMap
+     * @return
+     */
     public LatLng getScreenMiduleLocation(AMap aMap) {
         return aMap.getProjection().fromScreenLocation(new Point(mapView.getWidth() / 2, mapView.getHeight() / 2));
     }
 
-    private void sendMessage(double longitude, double latitude) {
-        String topic = Topic.createDriverLocation();
-        MqttTopic.validate(topic, false);
-        int qos = 0;
-        String payLoad = longitude + "-" + latitude;
-        mAmap.getMyLocation();
-        boolean isRetained = false;
 
-        MqttMessage mqttMessage = new MqttMessage();
-        mqttMessage.setPayload(payLoad.getBytes());
-        mqttMessage.setQos(qos);
-        mqttMessage.setRetained(isRetained);
-        MQTTManager.getInstance().publish(topic, mqttMessage);
-    }
-
+    /**
+     * 订阅MQTT
+     */
     public void subscribeMQTT() {
-        SmoothMoveMarker smoothMarker = new SmoothMoveMarker(mAmap);
         HashMap<String, SmoothMoveMarker> map = new HashMap<>();
         Gson gson = new Gson();
 
-        MQTTManager.getInstance().subscribe(Topic.createDriverLocation()).buffer(1, TimeUnit.SECONDS, 5)
+        MQTTManager.getInstance().subscribe(Topic.createDriverLocation()).buffer(3, TimeUnit.SECONDS, 5)
                 .subscribe(mqttMessageList -> {
                     for (MqttMessage mqttMessage : mqttMessageList) {
                         if (mqttMessage == null) return;
                         String mQttStr = mqttMessage.toString();
-                        Log.e("m1tt", mQttStr);
+                        HNLog.println(mQttStr);
                         Double longitude = 0d;
                         double latitude = 0d;
                         String id = "";
@@ -172,17 +174,7 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
     }
 
     private SmoothMoveMarker smoothMarkerMove(SmoothMoveMarker smoothMoveMarker, ArrayList<LatLng> points) {
-        // 获取轨迹坐标点
 
-//        mAmap.animateCamera(CameraUpdateFactory.newLatLng(drivePoint));
-
-
-        LatLngBounds.Builder b = LatLngBounds.builder();
-        for (int i = 0; i < points.size(); i++) {
-            b.include(points.get(i));
-        }
-
-        LatLngBounds bounds = b.build();
         // 设置滑动的图标
         LatLng drivePoint = points.get(0);
         smoothMoveMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.mipmap.map_mine_location));
@@ -230,6 +222,7 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
         mLocationClient = null;
     }
 
+
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
         if (mLocationClient != null) {
@@ -247,56 +240,51 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
                     // 改变地图中心点
                     CameraUpdate mCamerUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(latitude, longitude), 17, 0, 0));
                     mAmap.animateCamera(mCamerUpdate);
-
-//                    markerOption.position(new LatLng(latitude, longitude));
-//                    markerOption.title("北京市").snippet("北京市：34.341568, 108.940174");
-//
-//                    markerOption.draggable(true);//设置Marker可拖动
-//                    markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                            .decodeResource(MyApplication.getContext().getResources(), R.mipmap.map_mine_location)));
-//                    // 将Marker设置为贴地显示，可以双指下拉地图查看效果
-//                    markerOption.setFlat(true);//设置marker平贴地图效果
-//                    mAmap.addMarker(markerOption);
-
                     // 获取轨迹坐标点
                     List<LatLng> points = new ArrayList<LatLng>();
                     LatLng drivePoint = new LatLng(latitude, longitude);
                     points.add(drivePoint);
 
                     // 设置滑动的图标
-                    markerOption.setDescriptor(BitmapDescriptorFactory.fromResource(R.mipmap.map_mine_location));
-                    markerOption.setPoints(points);
-                    markerOption.setTotalDuration(30);
-                    markerOption.startSmoothMove();
+                    moveMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.mipmap.map_mine_location));
+                    moveMarker.setPoints(points);
+                    moveMarker.setTotalDuration(30);
+                    moveMarker.startSmoothMove();
 
                     isMoveToLocation = false;
                 }
-                //
-                Log.e("error", "adCode" + adCode + "\n address" + address + "\n aoiName" + aoiName + "\n city" + city + "\nlatitude" + latitude + "\nlongitude" + longitude + "\ncityCode" + cityCode + "\ndescription" + description);
 
+                changeLocationSinal(latitude, longitude);
 
             } else {
                 String errText = "定位失败," + aMapLocation.getErrorCode() + ": " + aMapLocation.getErrorInfo();
-                Log.e("AmapErr", errText);
+
+                HNLog.i("AmapErr", errText);
             }
         }
+    }
+
+    /**
+     * 定位地址改变
+     *
+     * @param latitude
+     * @param longitude
+     */
+    private void changeLocationSinal(double latitude, double longitude) {
+        Coordinate coordinate = new Coordinate();
+        coordinate.setLongtidute(longitude);
+        coordinate.setLatidute(latitude);
+        if (coordinateVariable == null) {
+            coordinateVariable = new Variable<>(coordinate);
+        }
+
+        coordinateVariable.setValue(coordinate);
     }
 
     @Override
     public void onMapLoaded() {
         if (mapView == null) return;
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.setFlat(true);
-        markerOptions.anchor(0.5f, 0.5f);
-        markerOptions.position(new LatLng(0, 0));
-        markerOptions
-                .icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                        .decodeResource(mapView.getContext().getResources(),
-                                R.mipmap.map_select_point)));
-        Marker mPositionMark = mAmap.addMarker(markerOptions);
-
-        mPositionMark.setPositionByPixels(mapView.getWidth() / 2,
-                mapView.getHeight() / 2);
+        addInstructMark();//第一次加载添加标记
         AMapLocationClientOption option = new AMapLocationClientOption();
         option.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
         option.setOnceLocation(true);
@@ -304,4 +292,113 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
 
         mLocationClient.startLocation();
     }
+
+
+    /**
+     * 添加屏幕中间位置Marker
+     */
+    private void addInstructMark() {
+
+        Marker mPositionMark = addMark(new LatLng(0, 0), R.mipmap.map_select_point);
+        mPositionMark.setPositionByPixels(mapView.getWidth() / 2,
+                mapView.getHeight() / 2);
+    }
+
+    public void setOnCameraChangeListener(AMap.OnCameraChangeListener mOnCameraChangeListener) {
+        if (mAmap == null || mOnCameraChangeListener == null) return;
+        mAmap.setOnCameraChangeListener(mOnCameraChangeListener);
+    }
+
+
+    public void setOnMapClickListener(AMap.OnMapClickListener clickListener) {
+        if (mAmap == null || clickListener == null) return;
+        mAmap.setOnMapClickListener(clickListener);
+    }
+
+
+    /**
+     * 缩放地图  显示fromLatlng toLatlog坐标
+     */
+    public void zoom() {
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(getLatLngBounds(fromLatLng, toLatLng), 900, 900, 50);
+        mAmap.moveCamera(cameraUpdate);
+
+        addStartMarkAndEndMark();
+    }
+
+
+    /**
+     * 添加起始点和 重点marker
+     */
+    public void addStartMarkAndEndMark() {
+        if (startMark != null) {
+            startMark.remove();
+        }
+        if (endMark != null) {
+            endMark.remove();
+        }
+        startMark = addMark(fromLatLng, R.mipmap.map_start_point);
+        endMark = addMark(toLatLng, R.mipmap.map_end_point);
+    }
+
+    /**
+     * 添加坐标和图片资源  在地图上锚点
+     *
+     * @param latLng
+     * @param iconResId
+     * @return
+     */
+    private Marker addMark(LatLng latLng, int iconResId) {
+        MarkerOptions options = new MarkerOptions();
+        options.setFlat(true);
+        options.anchor(0.5f, 0.5f);
+        options.position(latLng);
+        options.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                .decodeResource(mapView.getContext().getResources(),
+                        iconResId)));
+        return mAmap.addMarker(options);
+    }
+
+    /**
+     * 获得两点之间 矩形区域
+     *
+     * @param fromLatLng
+     * @param toLatLng
+     * @return
+     */
+    @NonNull
+    private LatLngBounds getLatLngBounds(LatLng fromLatLng, LatLng toLatLng) {
+        double fLat = fromLatLng.latitude;
+        double fLng = fromLatLng.longitude;
+        double tLat = toLatLng.latitude;
+        double tLng = toLatLng.longitude;
+
+        return new LatLngBounds(new LatLng(Math.min(fLat, tLat), Math.min(fLng, tLng)), new LatLng(Math.max(fLat, tLat), Math.max(fLng, tLng)));
+    }
+
+
+    public Variable<Coordinate> getCoordinateVariable() {
+        return coordinateVariable;
+    }
+
+    public void setCoordinateVariable(Variable<Coordinate> coordinateVariable) {
+        this.coordinateVariable = coordinateVariable;
+    }
+
+    public void setFromLatLng(LatLng fromLatLng) {
+        this.fromLatLng = fromLatLng;
+    }
+
+    public void setToLatLng(LatLng toLatLng) {
+        this.toLatLng = toLatLng;
+    }
+
+    public LatLng getFromLatLng() {
+        return fromLatLng;
+    }
+
+    public LatLng getToLatLng() {
+        return toLatLng;
+    }
+
 }
