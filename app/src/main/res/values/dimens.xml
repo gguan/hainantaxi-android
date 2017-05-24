@@ -3,5 +3,17 @@
     <dimen name="refresh_head_height">48dp</dimen>
     <dimen name="load_more_bottom_height">48dp</dimen>
 
-    <dimen name="custom_title_height">48dp</dimen>
+    <dimen name="hn_title_height">48dp</dimen>
+    <dimen name="hn_distance_borders">14dp</dimen>
+    <dimen name="hn_distance_borders_half">7dp</dimen>
+    <dimen name="hn_image_height">20dp</dimen>
+    <dimen name="hn_image_width">20dp</dimen>
+
+
+
+
+
+
+
+    <dimen name="hn_sp_default">14sp</dimen>
 </resources>

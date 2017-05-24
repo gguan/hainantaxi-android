@@ -19,29 +19,22 @@ import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.LatLngBounds;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.utils.SpatialRelationUtil;
 import com.amap.api.maps.utils.overlay.SmoothMoveMarker;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.hainantaxi.MyApplication;
 import com.hainantaxi.R;
 import com.hainantaxi.modle.entity.DeriverLocation;
 import com.hainantaxi.mqtt.manager.MQTTManager;
 import com.hainantaxi.mqtt.modle.Topic;
+import com.hainantaxi.utils.HNLog;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +62,8 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
         this.mapView = mapView;
         this.mAmap = mapView.getMap();
         markerOption = new SmoothMoveMarker(mAmap);
+
+        init();
     }
 
     public void init() {
@@ -117,16 +112,15 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
     }
 
     public void subscribeMQTT() {
-        SmoothMoveMarker smoothMarker = new SmoothMoveMarker(mAmap);
         HashMap<String, SmoothMoveMarker> map = new HashMap<>();
         Gson gson = new Gson();
 
-        MQTTManager.getInstance().subscribe(Topic.createDriverLocation()).buffer(1, TimeUnit.SECONDS, 5)
+        MQTTManager.getInstance().subscribe(Topic.createDriverLocation()).buffer(3, TimeUnit.SECONDS, 5)
                 .subscribe(mqttMessageList -> {
                     for (MqttMessage mqttMessage : mqttMessageList) {
                         if (mqttMessage == null) return;
                         String mQttStr = mqttMessage.toString();
-                        Log.e("m1tt", mQttStr);
+                        HNLog.println(mQttStr);
                         Double longitude = 0d;
                         double latitude = 0d;
                         String id = "";
@@ -176,13 +170,6 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
 
 //        mAmap.animateCamera(CameraUpdateFactory.newLatLng(drivePoint));
 
-
-        LatLngBounds.Builder b = LatLngBounds.builder();
-        for (int i = 0; i < points.size(); i++) {
-            b.include(points.get(i));
-        }
-
-        LatLngBounds bounds = b.build();
         // 设置滑动的图标
         LatLng drivePoint = points.get(0);
         smoothMoveMarker.setDescriptor(BitmapDescriptorFactory.fromResource(R.mipmap.map_mine_location));
@@ -248,16 +235,6 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
                     CameraUpdate mCamerUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(latitude, longitude), 17, 0, 0));
                     mAmap.animateCamera(mCamerUpdate);
 
-//                    markerOption.position(new LatLng(latitude, longitude));
-//                    markerOption.title("北京市").snippet("北京市：34.341568, 108.940174");
-//
-//                    markerOption.draggable(true);//设置Marker可拖动
-//                    markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                            .decodeResource(MyApplication.getContext().getResources(), R.mipmap.map_mine_location)));
-//                    // 将Marker设置为贴地显示，可以双指下拉地图查看效果
-//                    markerOption.setFlat(true);//设置marker平贴地图效果
-//                    mAmap.addMarker(markerOption);
-
                     // 获取轨迹坐标点
                     List<LatLng> points = new ArrayList<LatLng>();
                     LatLng drivePoint = new LatLng(latitude, longitude);
@@ -271,13 +248,12 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
 
                     isMoveToLocation = false;
                 }
-                //
-                Log.e("error", "adCode" + adCode + "\n address" + address + "\n aoiName" + aoiName + "\n city" + city + "\nlatitude" + latitude + "\nlongitude" + longitude + "\ncityCode" + cityCode + "\ndescription" + description);
 
 
             } else {
                 String errText = "定位失败," + aMapLocation.getErrorCode() + ": " + aMapLocation.getErrorInfo();
-                Log.e("AmapErr", errText);
+
+                HNLog.i("AmapErr", errText);
             }
         }
     }
@@ -304,4 +280,16 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
 
         mLocationClient.startLocation();
     }
+
+    public void setOnCameraChangeListener(AMap.OnCameraChangeListener mOnCameraChangeListener) {
+        if (mAmap == null || mOnCameraChangeListener == null) return;
+        mAmap.setOnCameraChangeListener(mOnCameraChangeListener);
+    }
+
+
+    public void setOnMapClickListener(AMap.OnMapClickListener clickListener) {
+        if (mAmap == null || clickListener == null) return;
+        mAmap.setOnMapClickListener(clickListener);
+    }
+
 }

@@ -20,7 +20,7 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 
 
-import com.hainantaxi.utils.PLLog;
+import com.hainantaxi.utils.HNLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +58,7 @@ final class StorageUtils {
             appCacheDir = context.getCacheDir();
         }
         if (appCacheDir == null) {
-            PLLog.w(TAG, "Can't define system cache directory! The app should be re-installed.");
+            HNLog.w(TAG, "Can't define system cache directory! The app should be re-installed.");
         }
         return appCacheDir;
     }
@@ -69,13 +69,13 @@ final class StorageUtils {
         File appCacheDir = new File(new File(dataDir, context.getPackageName()), "cache");
         if (!appCacheDir.exists()) {
             if (!appCacheDir.mkdirs()) {
-                PLLog.w(TAG, "Unable to create external cache directory");
+                HNLog.w(TAG, "Unable to create external cache directory");
                 return null;
             }
             try {
                 new File(appCacheDir, ".nomedia").createNewFile();
             } catch (IOException e) {
-                PLLog.i(TAG, "Can't create \".nomedia\" file in application external cache directory");
+                HNLog.i(TAG, "Can't create \".nomedia\" file in application external cache directory");
             }
         }
         return appCacheDir;

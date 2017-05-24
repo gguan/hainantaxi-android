@@ -13,5 +13,9 @@ public class Config {
     public static final String KEY_TOKEN_HEAD = "X-Auth-Token";
     public static final String KEY_AGENT = "User-Agent";
     public static final String KEY_PLAY_VERSION = "Play-Version";
-    public static final String KEY_TIME_OUT ="Timestamp";
+    public static final String KEY_TIME_OUT = "Timestamp";
+
+
+    public static final String User_sub_topic = "region/+/driver";
+    public static final String Driver_sub_topic = "drivers/location/";
 }

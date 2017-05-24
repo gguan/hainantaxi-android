@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.text.Html;
 
 import com.hainantaxi.R;
-import com.hainantaxi.utils.PLLog;
+import com.hainantaxi.utils.HNLog;
 
 
 public class UpdateDialog {
@@ -29,7 +29,7 @@ public class UpdateDialog {
             dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         } else {
-            PLLog.e("===", "Context 不合法");
+            HNLog.e("===", "Context 不合法");
         }
     }
 
@@ -39,7 +39,7 @@ public class UpdateDialog {
 
 
     private static void goToDownload(Context context, String downloadUrl) {
-        PLLog.e("===", "点击下载");
+        HNLog.e("===", "点击下载");
         Intent intent = new Intent(context.getApplicationContext(), DownloadService.class);
         intent.putExtra(DownloadService.APK_DOWNLOAD_URL, downloadUrl);
         context.startService(intent);

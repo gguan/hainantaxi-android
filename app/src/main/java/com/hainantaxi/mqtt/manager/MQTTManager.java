@@ -2,6 +2,7 @@ package com.hainantaxi.mqtt.manager;
 
 import android.util.Log;
 
+import com.hainantaxi.Config;
 import com.hainantaxi.MyApplication;
 import com.hainantaxi.mqtt.modle.Connection;
 
@@ -67,7 +68,15 @@ public class MQTTManager {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    subSinal.get(topic).onNext(message);
+                    //TODO 测试
+                    if (!topic.isEmpty() && topic.startsWith("region") && topic.endsWith("driver")) {
+                        subSinal.get(Config.User_sub_topic).onNext(message);
+                    }
+
+                    PublishSubject<MqttMessage> subject = subSinal.get(topic);
+                    if(subject!=null){
+                        subject.onNext(message);
+                    }
                 }
 
                 @Override

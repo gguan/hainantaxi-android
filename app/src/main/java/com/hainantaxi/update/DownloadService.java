@@ -12,7 +12,7 @@ import android.util.Log;
 
 
 import com.hainantaxi.R;
-import com.hainantaxi.utils.PLLog;
+import com.hainantaxi.utils.HNLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -130,7 +130,7 @@ public class DownloadService extends IntentService {
 
 
     private void installAPk(File apkFile) {
-        PLLog.e("===", "准备安装 APK");
+        HNLog.e("===", "准备安装 APK");
         Intent intent = new Intent(Intent.ACTION_VIEW);
         //如果没有设置SDCard写权限，或者没有sdcard,apk文件保存在内存中，需要授予权限才能安装
         try {
