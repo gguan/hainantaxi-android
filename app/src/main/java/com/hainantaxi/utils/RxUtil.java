@@ -13,7 +13,7 @@ import rx.schedulers.Schedulers;
  * Created by develop on 17-5-16.
  */
 public class RxUtil {
-    static final int SUCCESS_CODE = 1;
+    static final int SUCCESS_CODE = 0;
 
     @Remote
     public static <T> Subscription subscribeRemoteable(Observable<T> observable, Observer<T> observer) {

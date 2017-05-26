@@ -5,6 +5,7 @@ import android.util.Log;
 import com.hainantaxi.Config;
 import com.hainantaxi.MyApplication;
 import com.hainantaxi.mqtt.modle.Connection;
+import com.hainantaxi.utils.HNLog;
 
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -18,9 +19,15 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.functions.Action1;
+import rx.observables.AsyncOnSubscribe;
 import rx.subjects.PublishSubject;
 
 /**
@@ -35,8 +42,8 @@ public class MQTTManager {
     private MqttAndroidClient mClient;
     private String mClientId = "001";
 
-    private ArrayList<String> subscribes = new ArrayList<>();
-    private HashMap<String, PublishSubject<MqttMessage>> subSinal = new HashMap<>();
+    private ArrayList<String> subscribes = new ArrayList<>();//保存订阅的话题
+    private HashMap<String, PublishSubject<MqttMessage>> subSinal = new HashMap<>();//保存订阅的话题和信号
     private Connection connection = new Connection();
 
     public static MQTTManager getInstance() {
@@ -68,11 +75,12 @@ public class MQTTManager {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    //TODO 测试
-                    if (!topic.isEmpty() && topic.startsWith("region") && topic.endsWith("driver")) {
-                        subSinal.get(Config.User_sub_topic).onNext(message);
-                    }
+//                    //TODO 测试
+//                    if (!topic.isEmpty() && topic.startsWith("region") && topic.endsWith("driver")) {
+//                        subSinal.get(Config.User_sub_topic).onNext(message);
+//                    }
 
+                    HNLog.i("messageArrived_topic", message.toString());
                     PublishSubject<MqttMessage> subject = subSinal.get(topic);
                     if (subject != null) {
                         subject.onNext(message);
@@ -156,6 +164,29 @@ public class MQTTManager {
         }
     }
 
+    public Observable<MqttMessage> subscribe(List<String> regions) {
+        Observable<MqttMessage> mqttMessageObservable = null;
+        try {
+            for (String t : subSinal.keySet()) {
+                if (!regions.contains(t)) {
+                    unSubscribe(t);
+                }
+            }
+            for (String t : regions) {
+                if (mqttMessageObservable == null) {
+                    mqttMessageObservable = subscribe("region/" + t + "/driver");
+                } else {
+                    mqttMessageObservable = mqttMessageObservable.mergeWith(subscribe("region/" + t + "/driver"));
+                }
+            }
+            if (mqttMessageObservable == null) {
+                mqttMessageObservable = Observable.empty();
+            }
+        } catch (Exception ex) {
+
+        }
+        return mqttMessageObservable;
+    }
 
     public Observable<MqttMessage> subscribe(String topic) {
 

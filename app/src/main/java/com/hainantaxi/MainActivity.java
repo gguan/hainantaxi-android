@@ -15,12 +15,19 @@ import com.amap.api.services.help.Tip;
 import com.hainantaxi.map.LocationEcodeTask;
 import com.hainantaxi.map.MapLocationTask;
 import com.hainantaxi.modle.entity.Coordinate;
+import com.hainantaxi.modle.entity.Region;
 import com.hainantaxi.mqtt.manager.MQTTManager;
 import com.hainantaxi.ui.BaseActivity;
 import com.hainantaxi.ui.citysearchpoi.CitySearchActivity;
+import com.hainantaxi.utils.HNLog;
 import com.hainantaxi.utils.PermissionUtils;
+import com.hainantaxi.utils.RxUtil;
 import com.hainantaxi.view.CustomTitle;
 
+
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -65,22 +72,36 @@ public class MainActivity extends BaseActivity implements AMap.OnCameraChangeLis
             overridePendingTransition(R.anim.slide_in_bottom, 0);
         });
 
-        mMapLocationTask.getCoordinateVariable().asObservable().distinctUntilChanged(new Func2<Coordinate, Coordinate, Boolean>() {
-            @Override
-            public Boolean call(Coordinate coordinate, Coordinate coordinate2) {
-                return null;
-            }
-        }).flatMap(new Func1<Coordinate, Observable<Object>>() {
-            @Override
-            public Observable<Object> call(Coordinate coordinate) {
-                return null;
-            }
-        }).subscribe(new Action1<Object>() {
-            @Override
-            public void call(Object o) {
-                
-            }
-        });
+        //TODO 等重构 写入Presenter
+        if (mMapLocationTask.getCoordinateVariable() != null) {
+            mMapLocationTask.getCoordinateVariable().asObservable().distinctUntilChanged((coordinate, coordinate2) -> {
+                if (coordinate == null || coordinate2 == null) {
+                    return false;
+                }
+                if (coordinate.getLatidute() == coordinate2.getLatidute() && coordinate.getLongtidute() == coordinate2.getLongtidute()) {
+                    return true;
+                }
+                return false;
+            }).flatMap(new Func1<Coordinate, Observable<Region>>() {
+                @Override
+                public Observable<Region> call(Coordinate coordinate) {
+                    if (coordinate == null || coordinate.getLongtidute() == 0) {
+                        return null;
+                    }
+                    return RxUtil.netRequest(((MyApplication) MainActivity.this.getApplication()).getmBaseRepositoryComponent().getBaseRepository().fetchRegion(coordinate.getLongtidute(), coordinate.getLatidute(), 14));
+                }
+            }).subscribe(o -> {
+                if (o != null) {
+                    double distance = o.getDistance();
+                    String regionId = o.getRegionId();
+                    List<String> subRegions = o.getSubRegions();
+                    String s = o.toString();
+
+                    mMapLocationTask.subscribeMQTT(subRegions);
+                }
+            }, throwable -> HNLog.e("error", throwable.getMessage()));
+        }
+
     }
 
     @Override
@@ -172,23 +193,9 @@ public class MainActivity extends BaseActivity implements AMap.OnCameraChangeLis
                 Tip tip = data.getParcelableExtra(CitySearchActivity.Key_Tips);
 
                 if (tip != null) {
+                    mTvTo.setText(tip.getName());
                     LatLonPoint point = tip.getPoint();
-                    if (point != null) {
-                        mMapLocationTask.setToLatLng(new LatLng(point.getLatitude(), point.getLongitude()));
-                    }
-                    mLocationEcodeTask.addSubscription(LocationEcodeTask.GEOCODE, mLocationEcodeTask.loadGeoCodeResult(tip.getName(), tip.getAdcode()).subscribe(result -> {
-                        if (result == null) return;
-                        mTvTo.setText(result.getGeocodeQuery().getLocationName());
-                    }));
-                    mMapLocationTask.zoom();
-                    Observable<Double> observable = Observable.create(new Observable.OnSubscribe<Double>() {
-                        @Override
-                        public void call(Subscriber<? super Double> subscriber) {
-                            //计算距离
-
-                        }
-                    });
-
+                    mMapLocationTask.zoom(new LatLng(point.getLatitude(), point.getLongitude()));
                 }
             }
         }

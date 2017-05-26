@@ -5,7 +5,10 @@ import android.util.Log;
 
 import com.hainantaxi.BuildConfig;
 import com.hainantaxi.Config;
+import com.hainantaxi.modle.entity.Region;
+import com.hainantaxi.net.BaseDataSource;
 import com.hainantaxi.net.ErrorListener;
+import com.hainantaxi.net.HTTPResponse;
 import com.hainantaxi.net.service.MyService;
 import com.hainantaxi.net.service.PreferenceService;
 import com.hainantaxi.utils.AppUtils;
@@ -28,13 +31,14 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import rx.Observable;
 
 /**
  * Created by develop on 2017/5/17.
  */
 
 @Singleton
-public class BaseRemoteDataSource {
+public class BaseRemoteDataSource implements BaseDataSource {
 
     private Retrofit mRetrofit;
     private MyService mPlayService;
@@ -131,5 +135,10 @@ public class BaseRemoteDataSource {
 
     public void setErrorListener(ErrorListener mErrorListener) {
         this.mErrorListener = mErrorListener;
+    }
+
+    @Override
+    public Observable<HTTPResponse<Region>> fetchRegion(double lat, double lng, int zoomDepth) {
+        return mPlayService.fetchRegion(lat, lng, zoomDepth);
     }
 }

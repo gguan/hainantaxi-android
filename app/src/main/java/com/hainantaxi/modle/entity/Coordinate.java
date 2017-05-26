@@ -8,6 +8,15 @@ public class Coordinate {
     private double latidute;
     private double longtidute;
 
+
+    public Coordinate(double latidute, double longtidute) {
+        this.latidute = latidute;
+        this.longtidute = longtidute;
+    }
+
+    public Coordinate() {
+    }
+
     public double getLatidute() {
         return latidute;
     }

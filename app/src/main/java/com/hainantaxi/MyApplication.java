@@ -44,7 +44,7 @@ public class MyApplication extends Application {
         this.context = getApplicationContext();
         initRepositoryComponent();
 //        initBugly();
-        initSMS();
+//        initSMS();
     }
 
     public static Context getContext() {
@@ -75,12 +75,6 @@ public class MyApplication extends Application {
             FrescoUtils.initFresco(this, okHttpClient);
         }
 
-        MQTTManager.getInstance().subscribe("region/13-2234-5740/driver").subscribe(new Action1<MqttMessage>() {
-            @Override
-            public void call(MqttMessage mqttMessage) {
-                Log.e("MQTT", mqttMessage.toString());
-            }
-        });
     }
 
 
@@ -88,5 +82,9 @@ public class MyApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         MQTTManager.release();
+    }
+
+    public BaseRepositoryComponent getmBaseRepositoryComponent() {
+        return mBaseRepositoryComponent;
     }
 }

@@ -5,7 +5,7 @@ package com.hainantaxi;
  */
 
 public class Config {
-    public static final String BASE_URL = "https://api.playalot.cn/v1/";
+    public static final String BASE_URL = "http://106.14.202.84:4400/v1/";
     public static final String USER_AGENT_HEAD = "Play/";
     public static final String APP_VERSION_HEAD = "Android/";
     public static final long NET_TIME_OUT = 1000;
