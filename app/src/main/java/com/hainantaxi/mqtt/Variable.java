@@ -1,6 +1,9 @@
 package com.hainantaxi.mqtt;
 
+import android.widget.Toast;
+
 import rx.Observable;
+import rx.functions.Action1;
 import rx.subjects.BehaviorSubject;
 
 /**

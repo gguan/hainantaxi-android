@@ -37,6 +37,7 @@ public class TaxiCar {
             return this;
         }
 
+        marker.setVisible(true);
         LatLng drivePoint = points.get(0);
 
         Pair<Integer, LatLng> pair = SpatialRelationUtil.calShortestDistancePoint(points, drivePoint);
@@ -54,7 +55,7 @@ public class TaxiCar {
 
 
     public void stopMove() {
-        marker.getMarker().remove();
+        marker.setVisible(false);
     }
 
     public double getLatitude() {

@@ -125,8 +125,6 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
      */
     private void handleSubcribeMessage(MqttMessage mqttMessage) {
 
-        moveOldCar();
-
         DeriverLocation deriverLocation = parserMQTTmessage(mqttMessage);
         if (deriverLocation == null || deriverLocation.getCoordinate() == null || deriverLocation.getId() == null) {
             return;
@@ -141,12 +139,14 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
             TaxiCar car = map.get(id);
             moveCar(car, new ArrayList<LatLng>() {{
                 add(drivePoint);
-            }}, time);
+            }}, deriverLocation);
         } else {
             map.put(id, moveCar(null, new ArrayList<LatLng>() {{
                 add(drivePoint);
-            }}, time));
+            }}, deriverLocation));
         }
+
+        moveOldCar();
     }
 
     private void moveOldCar() {
@@ -162,9 +162,11 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
             }
 
             long nowTime = System.currentTimeMillis();
-            if (nowTime - car.getTimestamp() > 3 * 1000) {
+            long time = nowTime - car.getTimestamp();
+            if (time > 5 * 1000) {
                 car.stopMove();
                 map.remove(id);
+                HNLog.i("移除旧的车辆", "车量ID=" + car.getId() + "车量超时时间" + time);
             }
         }
 
@@ -232,12 +234,13 @@ public class MapLocationTask implements LocationSource, AMapLocationListener, AM
      * @param points
      * @return
      */
-    private TaxiCar moveCar(TaxiCar car, ArrayList<LatLng> points, long time) {
+    private TaxiCar moveCar(TaxiCar car, ArrayList<LatLng> points, DeriverLocation deriverLocation) {
 
         if (car == null) {
             car = new TaxiCar(new SmoothMoveMarker(mAmap));
         }
-        car.setTimestamp(time);
+        car.setTimestamp(deriverLocation.getTimestamp());
+        car.setId(deriverLocation.getId());
         return car.moveToPoint(points);
     }
 
